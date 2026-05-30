@@ -1,0 +1,16 @@
+[package]
+name        = "firewall_blocker"
+version     = "1.0.0"
+edition     = "2021"
+description = "Windows Firewall blocklist manager – bloque les IPs malveillantes connues"
+
+[[bin]]
+name = "firewall_blocker"
+path = "src/main.rs"
+
+[dependencies]
+ureq = "2"   # HTTP minimaliste, pas d'async, pas de tokio
+
+[profile.release]
+opt-level = 3
+strip     = true   # supprime les symboles de debug → .exe plus léger
