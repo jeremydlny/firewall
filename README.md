@@ -1,91 +1,91 @@
 # 🔥 firewall_blocker
 
-Windows Firewall blocklist manager written in Rust — automatically downloads known malicious IP lists and blocks them via PowerShell.
+Gestionnaire de blocklists IP pour le pare-feu Windows, écrit en Rust. Télécharge automatiquement des listes d'IPs malveillantes connues et les bloque via PowerShell.
 
-## Features
+## Fonctionnalités
 
-- 🚀 **Single PowerShell execution** — generates one `.ps1` script and runs it in a single process (minimal CPU/RAM usage)
-- 🔄 **Auto-purge** — removes old rules before recreating them, no duplicates
-- ⏰ **Scheduled task** — installs a daily Windows Task Scheduler job via `--install-task`
-- 📋 **84 000+ IPs blocked** across 9 threat intelligence sources
-- 📦 **2.2 MB standalone executable** — no runtime, no dependencies, runs on any Windows machine
+- 🚀 **Un seul process PowerShell** — génère un unique script `.ps1` et l'exécute en une fois (consommation CPU/RAM minimale)
+- 🔄 **Purge automatique** — supprime les anciennes règles avant de recréer les nouvelles, jamais de doublons
+- ⏰ **Tâche planifiée** — installe une tâche Windows quotidienne via `--install-task`
+- 📋 **84 000+ IPs bloquées** issues de 9 sources de threat intelligence
+- 📦 **Exécutable autonome de 2.2 MB** — aucun runtime, aucune dépendance, fonctionne sur n'importe quelle machine Windows
 
 ## Blocklists
 
 | Source | Description |
 |---|---|
-| [Spamhaus DROP](https://www.spamhaus.org/drop/drop.txt) | Networks allocated to criminal organizations |
-| [Feodo Tracker](https://feodotracker.abuse.ch/) | Active botnet C2 IPs (Emotet, TrickBot...) |
-| [ThreatFox](https://github.com/elliotwutingfeng/ThreatFox-IOC-IPs) | Recent malware IPs — abuse.ch mirror |
-| [Emerging Threats](https://rules.emergingthreats.net/) | Compromised IPs (used by pfSense/OPNsense) |
-| [Binary Defense](https://www.binarydefense.com/) | Active attackers — Artillery project |
-| [WindowsSpyBlocker](https://github.com/crazy-max/WindowsSpyBlocker) | Microsoft telemetry IPs |
-| [Blocklist.de](https://www.blocklist.de/) | SSH/FTP/mail attackers reported by honeypots |
-| [GreenSnow](https://blocklist.greensnow.co/) | Active malicious IPs |
-| [CINSArmy](https://cinsscore.com/) | IP reputation score blocklist |
+| [Spamhaus DROP](https://www.spamhaus.org/drop/drop.txt) | Réseaux alloués à des organisations criminelles |
+| [Feodo Tracker](https://feodotracker.abuse.ch/) | IPs de botnets actifs (Emotet, TrickBot...) |
+| [ThreatFox](https://github.com/elliotwutingfeng/ThreatFox-IOC-IPs) | Malware récents — mirror GitHub abuse.ch |
+| [Emerging Threats](https://rules.emergingthreats.net/) | IPs compromises actives (utilisé par pfSense/OPNsense) |
+| [Binary Defense](https://www.binarydefense.com/) | Attaquants actifs — projet Artillery |
+| [WindowsSpyBlocker](https://github.com/crazy-max/WindowsSpyBlocker) | IPs de télémétrie Microsoft |
+| [Blocklist.de](https://www.blocklist.de/) | Attaquants SSH/FTP/mail remontés par des honeypots |
+| [GreenSnow](https://blocklist.greensnow.co/) | IPs malveillantes actives |
+| [CINSArmy](https://cinsscore.com/) | Blocklist de réputation IP |
 
-## Usage
+## Utilisation
 
 ```powershell
-# Apply all lists (purges old rules first)
+# Applique toutes les listes (purge les anciennes règles avant)
 .\firewall_blocker.exe
 
-# Dry run — display without applying
+# Simulation — affiche sans appliquer
 .\firewall_blocker.exe --dry-run
 
-# Install daily scheduled task (requires admin)
+# Installe la tâche planifiée quotidienne (nécessite les droits admin)
 .\firewall_blocker.exe --install-task
 
-# Custom hour for scheduled task (default: 3 = 03:00)
+# Heure personnalisée pour la tâche (défaut : 3 = 03h00)
 .\firewall_blocker.exe --install-task --hour 6
 
-# Apply a single list only
+# Applique une seule liste
 .\firewall_blocker.exe --only Feodo-Tracker
 
-# List all created firewall rules
+# Liste toutes les règles créées
 .\firewall_blocker.exe --list
 
-# Remove all created rules
+# Supprime toutes les règles créées
 .\firewall_blocker.exe --remove
 ```
 
-> ⚠️ Must be run as **Administrator**
+> ⚠️ Doit être lancé en tant qu'**Administrateur**
 
-## How it works
+## Fonctionnement
 
-1. Downloads all blocklists concurrently
-2. Parses and deduplicates IPs/CIDRs
-3. Generates a single `.ps1` script with all `New-NetFirewallRule` calls (500 IPs per rule chunk)
-4. Executes the script in **one PowerShell process**
-5. Deletes the temporary `.ps1` file
+1. Télécharge toutes les blocklists
+2. Parse et dédoublonne les IPs/CIDRs
+3. Génère un unique script `.ps1` avec tous les appels `New-NetFirewallRule` (500 IPs par règle max)
+4. Exécute le script en **un seul process PowerShell**
+5. Supprime le fichier `.ps1` temporaire
 
-Rules are prefixed `BLOCKLIST - <source> - chunk<N> [Inbound/Outbound]` for easy identification in `wf.msc`.
+Les règles sont préfixées `BLOCKLIST - <source> - chunk<N> [Inbound/Outbound]` pour les retrouver facilement dans `wf.msc`.
 
-## Build
+## Compilation
 
-**Prerequisites:**
+**Prérequis :**
 - [Rust](https://rustup.rs/)
-- Visual Studio with **"Desktop development with C++"** workload
+- Visual Studio avec le workload **"Développement Desktop en C++"**
 
 ```powershell
 cargo build --release
 ```
 
-Output: `target\release\firewall_blocker.exe`
+Résultat : `target\release\firewall_blocker.exe`
 
-## Stack
+## Stack technique
 
 - **Rust 2021**
-- [`ureq`](https://github.com/algesten/ureq) — minimal sync HTTP client (only external dependency)
-- Pure `std` for CLI parsing, IP validation, timestamps and logging
+- [`ureq`](https://github.com/algesten/ureq) — client HTTP sync minimaliste (seule dépendance externe)
+- `std` pure pour le parsing CLI, la validation IP, les timestamps et le logging
 
-## Scheduled task
+## Tâche planifiée
 
-The `--install-task` flag registers a Windows Task Scheduler job that:
-- Runs daily at 03:00 (configurable with `--hour`)
-- Runs as `SYSTEM` with elevated privileges
-- Uses `StartWhenAvailable` — if the PC was off at 03:00, the task runs on next boot
+L'option `--install-task` enregistre une tâche dans le Planificateur de tâches Windows qui :
+- Se lance chaque jour à 03h00 (modifiable avec `--hour`)
+- S'exécute en tant que `SYSTEM` avec droits élevés
+- Utilise `StartWhenAvailable` — si le PC était éteint à 03h00, la tâche se lance au prochain démarrage
 
-## License
+## Licence
 
 MIT
