@@ -86,6 +86,6 @@ The `--install-task` option registers a task in the Windows Task Scheduler that:
 - Runs as `SYSTEM` with elevated rights
 - Uses `StartWhenAvailable` — if the PC was off at 3:00 AM, the task runs at the next startup
 
-## License
+## Author
 
-MIT
+Created by [Jeremy Delannoy](https://github.com/jeremydlny)
